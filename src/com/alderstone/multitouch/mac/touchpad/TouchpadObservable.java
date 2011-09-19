@@ -58,14 +58,13 @@ public class TouchpadObservable extends Observable
 		// System.loadLibrary("GlulogicMT");
 		
 		if (!SystemUtil.isMac())
+			throw new UnsupportedOperationException("Warning: multi-touch is currently available for Mac OS X (Intel 64) only");
+		
+		try
 		{
-			System.out.println("Warning: multi-touch support is currently available for Mac OS X only");
-		}
-		else try
-		{
-			InputStream is = TouchpadObservable.class.getResourceAsStream("libGlulogicMT.jnilib");
+			InputStream is = TouchpadObservable.class.getResourceAsStream("lib/mac/intel64/libGlulogicMT.jnilib");
 			
-			File libFile = File.createTempFile("libGlulogic", ".jnilib");
+			File libFile = File.createTempFile("libGlulogicMT", ".jnilib");
 			FileOutputStream fos = new FileOutputStream(libFile);
 			
 			int b;
