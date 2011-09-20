@@ -1,5 +1,6 @@
 package plugins.adufour.multitouch;
 
+import icy.plugin.abstract_.Plugin;
 import icy.plugin.interface_.PluginLibrary;
 
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import com.alderstone.multitouch.mac.touchpad.Finger;
 import com.alderstone.multitouch.mac.touchpad.FingerState;
 import com.alderstone.multitouch.mac.touchpad.TouchpadObservable;
 
-public class MultiTouchProvider implements PluginLibrary, Observer
+public class MultiTouchProvider extends Plugin implements PluginLibrary, Observer
 {
 	/** Rotation threshold used to distinguish pinch or drag from actual rotation */
 	public static final float						ROTATE_THRESHOLD			= 0.001f;
