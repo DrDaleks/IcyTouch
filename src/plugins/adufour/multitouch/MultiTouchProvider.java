@@ -18,7 +18,7 @@ import com.alderstone.multitouch.mac.touchpad.TouchpadObservable;
 public class MultiTouchProvider extends Plugin implements PluginLibrary, Observer
 {
 	/** Rotation threshold used to distinguish pinch or drag from actual rotation */
-	public static final float						ROTATE_THRESHOLD			= 0.001f;
+	public static final float						ROTATE_THRESHOLD			= 0.0008f;
 	
 	/** Motion threshold used to distinguish finger artifact from actual drag */
 	public static final float						DRAG_THRESHOLD				= 0.000005f;
