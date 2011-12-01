@@ -1,5 +1,6 @@
 package plugins.adufour.multitouch;
 
+import icy.gui.dialog.MessageDialog;
 import icy.plugin.abstract_.Plugin;
 import icy.plugin.interface_.PluginLibrary;
 
@@ -47,7 +48,7 @@ public class MultiTouchProvider extends Plugin implements PluginLibrary, Observe
 	 */
 	private final int[]								nbFramesPressed				= new int[MAX_FINGER_BLOBS];
 	
-	private final TouchpadObservable				tpo							= TouchpadObservable.getInstance();
+	private final TouchpadObservable				tpo;
 	
 	private final ArrayList<FingerStateListener>	listeners					= new ArrayList<FingerStateListener>();
 	
@@ -62,7 +63,21 @@ public class MultiTouchProvider extends Plugin implements PluginLibrary, Observe
 	 */
 	public MultiTouchProvider()
 	{
-		tpo.addObserver(this);
+		TouchpadObservable observable = null;
+		
+		try
+		{
+			observable = TouchpadObservable.getInstance();
+			observable.addObserver(this);
+		}
+		catch (UnsupportedOperationException e)
+		{
+			MessageDialog.showDialog("Error", e.getMessage(), MessageDialog.ERROR_MESSAGE);
+		}
+		finally
+		{
+			tpo = observable;
+		}
 	}
 	
 	/**

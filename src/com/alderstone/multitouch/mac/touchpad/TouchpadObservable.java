@@ -39,7 +39,14 @@ public class TouchpadObservable extends Observable
 	{
 	}
 	
-	public static TouchpadObservable getInstance()
+	/**
+	 * Gets the current running instance of the multi-touch provider.
+	 * 
+	 * @return
+	 * @throws UnsupportedOperationException
+	 *             if multi-touch support is not available on the client OS
+	 */
+	public static TouchpadObservable getInstance() throws UnsupportedOperationException
 	{
 		startupNative();
 		return INSTANCE;
