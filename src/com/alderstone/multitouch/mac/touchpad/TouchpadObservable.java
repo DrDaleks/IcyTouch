@@ -62,7 +62,7 @@ public class TouchpadObservable extends Observable
 		
 		try
 		{
-			InputStream is = TouchpadObservable.class.getResourceAsStream("lib/mac/intel64/libGlulogicMT.jnilib");
+			InputStream is = TouchpadObservable.class.getResourceAsStream("libGlulogicMT.jnilib");
 			
 			File libFile = File.createTempFile("libGlulogicMT", ".jnilib");
 			FileOutputStream fos = new FileOutputStream(libFile);

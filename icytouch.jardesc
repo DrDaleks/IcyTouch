@@ -11,8 +11,6 @@
         </sealing>
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="true" exportOutputFolder="false">
-        <javaElement handleIdentifier="=IcyTouch/src&lt;com.alderstone.multitouch.mac.touchpad.lib.mac.intel64"/>
-        <javaElement handleIdentifier="=IcyTouch/src&lt;com.alderstone.multitouch.mac.touchpad"/>
-        <javaElement handleIdentifier="=IcyTouch/src&lt;plugins.adufour.multitouch"/>
+        <javaElement handleIdentifier="=IcyTouch/src"/>
     </selectedElements>
 </jardesc>
