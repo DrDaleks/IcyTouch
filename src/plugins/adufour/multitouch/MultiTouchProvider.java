@@ -39,9 +39,9 @@ public class MultiTouchProvider extends Plugin implements PluginLibrary, Observe
 	 */
 	public static final int							PRESSED_FRAMES_THRESHOLD	= 6;
 	
-	private final Finger[]							currentFingers				= new Finger[MAX_FINGER_BLOBS];
+	private final Finger[]							currentFingersState			= new Finger[MAX_FINGER_BLOBS];
 	
-	private final Finger[]							oldFingers					= new Finger[MAX_FINGER_BLOBS];
+	private final Finger[]							oldFingersState				= new Finger[MAX_FINGER_BLOBS];
 	
 	/**
 	 * The number of frames each finger was pressed since the last pressed event
@@ -140,7 +140,7 @@ public class MultiTouchProvider extends Plugin implements PluginLibrary, Observe
 	public int getCount(FingerState state)
 	{
 		int cpt = 0;
-		for (Finger f : currentFingers)
+		for (Finger f : currentFingersState)
 		{
 			if (f == null)
 				continue;
@@ -155,134 +155,139 @@ public class MultiTouchProvider extends Plugin implements PluginLibrary, Observe
 		if (!enabled)
 			return;
 		
-		Finger newF1 = (Finger) arg;
+		Finger newFingerState = (Finger) arg;
 		
 		// the finger ID starts at 1, not 0
-		final int id = newF1.getID() - 1;
+		final int id = newFingerState.getID() - 1;
 		
-		Finger curF1 = currentFingers[id];
+		Finger oldFingerState = currentFingersState[id];
 		
-		if (curF1 == null || oldFingers[id] == null)
+		if (oldFingerState == null || oldFingersState[id] == null)
 		{
-			currentFingers[id] = newF1;
-			oldFingers[id] = newF1;
+			currentFingersState[id] = newFingerState;
+			oldFingersState[id] = newFingerState;
 			return;
 		}
 		
-		if (newF1.getState() == FingerState.PRESSED)
+		if (newFingerState.getState() == FingerState.PRESSED)
 		{
 			// count the number of frames the finger was pressed
 			nbFramesPressed[id]++;
 			
 			// consider the event "valid" only after a number of time frames
 			// => this prevents artifact gestures
-			
 			if (nbFramesPressed[id] > PRESSED_FRAMES_THRESHOLD)
 			{
 				// the event is valid => reset the counter
 				nbFramesPressed[id] = 0;
 				
-				// state listeners
-				if (newF1.getState() != curF1.getState())
-					for (FingerStateListener l : listeners)
-						l.fingerPressed(this, newF1);
-				
-				Point2f f1 = new Point2f(newF1.getX(), newF1.getY());
-				Point2f f1old = new Point2f(curF1.getX(), curF1.getY());
-				Vector3f df1 = new Vector3f(f1.x - f1old.x, f1.y - f1old.y, 0);
-				
-				// motion listeners
-				if (motionListeners.size() > 0)
-				{
-					if (Math.abs(df1.x) > MOTION_THRESHOLD || Math.abs(df1.y) > MOTION_THRESHOLD)
-						for (FingerMotionListener motionListener : motionListeners)
-							motionListener.fingerMoved(this, newF1, df1.x, df1.x);
-				}
-				
-				// multi-touch gestures
-				if (twoFingersListeners.size() > 0)
-				{
-					int nbFingers = getCount(FingerState.PRESSED);
-					
-					if (nbFingers == 2)
-					{
-						Finger curF2 = null;
-						// find the second finger
-						for (int i = 0; i < MAX_FINGER_BLOBS; i++)
-						{
-							curF2 = currentFingers[i];
-							if (curF2 != null && curF2.getState() == FingerState.PRESSED && curF2.getID() != newF1.getID())
-								break;
-						}
-						
-						int id2 = curF2.getID() - 1;
-						
-						Point2f f2 = new Point2f(curF2.getX(), curF2.getY());
-						Point2f f2old = new Point2f(oldFingers[id2].getX(), oldFingers[id2].getY());
-						Vector3f df2 = new Vector3f(f2.x - f2old.x, f2.y - f2old.y, 0);
-						
-						float dotv1v2 = df1.dot(df2);
-						
-						if (dotv1v2 > DRAG_THRESHOLD)
-						{
-							// drag
-							
-							float delta = df1.length();
-							df1.normalize(); // WARNING: df1 is destroyed from now on
-							
-							for (TwoFingersListener l : twoFingersListeners)
-								l.drag(this, new Vector2f(df1.x, df1.y), delta);
-						}
-						else
-						{
-							// pinch
-							
-							Vector3f f1f2 = new Vector3f(f2.x - f1.x, f2.y - f1.y, 0);
-							Vector3f f1f2Old = new Vector3f(f2old.x - f1old.x, f2old.y - f1old.y, 0);
-							
-							float dDistance = f1f2Old.length() - f1f2.length();
-							
-							if (Math.abs(dDistance) > PINCH_THRESHOLD)
-							{
-								for (TwoFingersListener l : twoFingersListeners)
-									l.pinch(this, dDistance);
-							}
-							
-							// rotate
-							
-							float angle = f1f2Old.angle(f1f2);
-							f1f2.cross(f1f2Old, f1f2); // WARNING: f1f2 is destroyed from now on
-							
-							if (Math.abs(f1f2.z) > ROTATE_THRESHOLD)
-							{
-								for (TwoFingersListener l : twoFingersListeners)
-									l.rotate(this, Math.signum(f1f2.z) * angle);
-							}
-						}
-					}
-				}
+				processMultiTouchEvent(oldFingerState, newFingerState);
 			}
 		}
-		else if (newF1.getState() == FingerState.RELEASED)
+		else if (newFingerState.getState() == FingerState.RELEASED)
 		{
 			nbFramesPressed[id] = 0;
 			
 			// state listeners
-			if (newF1.getState() != curF1.getState())
+			if (newFingerState.getState() != oldFingerState.getState())
 				for (FingerStateListener l : listeners)
-					l.fingerReleased(this, newF1);
+					l.fingerReleased(this, newFingerState);
 			
 		}
-		else if (newF1.getState() == FingerState.HOVER)
+		else if (newFingerState.getState() == FingerState.HOVER)
 		{
 			// state listeners
-			if (newF1.getState() != curF1.getState())
+			if (newFingerState.getState() != oldFingerState.getState())
 				for (FingerStateListener l : listeners)
-					l.fingerHover(this, newF1);
+					l.fingerHover(this, newFingerState);
 		}
 		
-		oldFingers[id] = currentFingers[id];
-		currentFingers[id] = newF1;
+		oldFingersState[id] = currentFingersState[id];
+		currentFingersState[id] = newFingerState;
+	}
+	
+	private void processMultiTouchEvent(Finger oldFingerState, Finger newFingerState)
+	{
+		// state listeners
+		if (newFingerState.getState() != oldFingerState.getState())
+			for (FingerStateListener l : listeners)
+				l.fingerPressed(this, newFingerState);
+		
+		Point2f f1 = new Point2f(newFingerState.getX(), newFingerState.getY());
+		Point2f f1old = new Point2f(oldFingerState.getX(), oldFingerState.getY());
+		Vector3f df1 = new Vector3f(f1.x - f1old.x, f1.y - f1old.y, 0);
+		
+		// motion listeners
+		if (motionListeners.size() > 0)
+		{
+			if (Math.abs(df1.x) > MOTION_THRESHOLD || Math.abs(df1.y) > MOTION_THRESHOLD)
+				for (FingerMotionListener motionListener : motionListeners)
+					motionListener.fingerMoved(this, newFingerState, df1.x, df1.x);
+		}
+		
+		// multi-touch gestures
+		if (twoFingersListeners.size() > 0)
+		{
+			int nbFingers = getCount(FingerState.PRESSED);
+			
+			if (nbFingers == 2)
+			{
+				Finger curF2 = null;
+				// find the second finger
+				for (int i = 0; i < MAX_FINGER_BLOBS; i++)
+				{
+					curF2 = currentFingersState[i];
+					if (curF2 != null && curF2.getState() == FingerState.PRESSED && curF2.getID() != newFingerState.getID())
+						break;
+				}
+				
+				int id2 = curF2.getID() - 1;
+				
+				Point2f f2 = new Point2f(curF2.getX(), curF2.getY());
+				Point2f f2old = new Point2f(oldFingersState[id2].getX(), oldFingersState[id2].getY());
+				Vector3f df2 = new Vector3f(f2.x - f2old.x, f2.y - f2old.y, 0);
+				
+				float dotv1v2 = df1.dot(df2);
+				
+				if (dotv1v2 > DRAG_THRESHOLD)
+				{
+					// drag
+					
+					float delta = df1.length();
+					df1.normalize(); // WARNING: df1 is destroyed from now on
+					
+					for (TwoFingersListener l : twoFingersListeners)
+						l.drag(this, new Vector2f(df1.x, df1.y), delta);
+				}
+				else
+				{
+					// pinch
+					
+					Vector3f f1f2 = new Vector3f(f2.x - f1.x, f2.y - f1.y, 0);
+					Vector3f f1f2Old = new Vector3f(f2old.x - f1old.x, f2old.y - f1old.y, 0);
+					
+					float dDistance = f1f2Old.length() - f1f2.length();
+					
+					if (Math.abs(dDistance) > PINCH_THRESHOLD)
+					{
+						for (TwoFingersListener l : twoFingersListeners)
+							l.pinch(this, dDistance);
+					}
+					
+					// rotate
+					
+					float angle = f1f2Old.angle(f1f2);
+					f1f2.cross(f1f2Old, f1f2); // WARNING: f1f2 is destroyed from now on
+					
+					if (Math.abs(f1f2.z) > ROTATE_THRESHOLD)
+					{
+						for (TwoFingersListener l : twoFingersListeners)
+							l.rotate(this, Math.signum(f1f2.z) * angle);
+					}
+				}
+			}
+		}
+		
 	}
 	
 	@Override
