@@ -75,7 +75,7 @@ public class TouchpadObservable extends Observable
 			FileOutputStream fos = new FileOutputStream(libFile);
 			
 			int b;
-			while ((b = is.read()) != -1)
+			while ((b = is.read()) != -1) // TODO optimize by writing more bytes at once
 				fos.write(b);
 			fos.close();
 			

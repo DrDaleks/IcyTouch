@@ -290,10 +290,15 @@ public class MultiTouchProvider extends Plugin implements PluginLibrary, Observe
 		
 	}
 	
+	public void shutDown()
+	{
+		tpo.deleteObservers();
+	}
+	
 	@Override
 	protected void finalize() throws Throwable
 	{
-		tpo.deleteObservers();
+		shutDown();
 		super.finalize();
 	}
 }
