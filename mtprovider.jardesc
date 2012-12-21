@@ -11,6 +11,11 @@
         </sealing>
     </manifest>
     <selectedElements exportClassFiles="true" exportJavaFiles="true" exportOutputFolder="false">
-        <javaElement handleIdentifier="=IcyTouch/src"/>
+        <javaElement handleIdentifier="=IcyTouch/src&lt;plugins.adufour.multitouch{MultiTouchProvider.java"/>
+        <javaElement handleIdentifier="=IcyTouch/src&lt;com.alderstone.multitouch.mac.touchpad"/>
+        <javaElement handleIdentifier="=IcyTouch/src&lt;plugins.adufour.multitouch{FingerStateAdapter.java"/>
+        <javaElement handleIdentifier="=IcyTouch/src&lt;plugins.adufour.multitouch{TwoFingersListener.java"/>
+        <javaElement handleIdentifier="=IcyTouch/src&lt;plugins.adufour.multitouch{FingerStateListener.java"/>
+        <javaElement handleIdentifier="=IcyTouch/src&lt;plugins.adufour.multitouch{FingerMotionListener.java"/>
     </selectedElements>
 </jardesc>
